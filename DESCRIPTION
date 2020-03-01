@@ -1,0 +1,13 @@
+Package: deepDreameR
+Title: Using Keras to Demonstrate Deep Dream on Images
+Version: 0.0.0.9000
+Description: This package uses the R Keras API to apply the Deep Dream algorithm to an image
+             using a pre-built model from Keras as the reference model.
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
+Imports: 
+    keras,
+    tensorflow,
+    imager,
+    magrittr
