@@ -6,6 +6,7 @@
 \usage{
 deep_dreamify(
   base_image_path,
+  loss_and_grads = calc_loss_and_grads(load_imagenet_model()),
   layer_contributions = list(mixed2 = 0.2, mixed3 = 3, mixed4 = 2, mixed5 = 1.5),
   step = 0.01,
   num_octave = 3,

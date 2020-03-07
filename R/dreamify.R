@@ -10,12 +10,42 @@ load_imagenet_model <- function(...){
 
   # load pre-built inception V3 model
   message('\nLoading Model...')
-  model <- application_inception_v3(
+  model <- keras::application_inception_v3(
 
     weights = "imagenet",
     include_top = FALSE,
     ...
   )
+}
+
+calc_loss_and_grads <- function(model){
+
+  # Set some initial parameters
+  k_set_learning_phase(0)
+  tf$compat$v1$disable_eager_execution()
+
+  message('\nCalculating loss and gradients...\n')
+  # Define loss to be maximised
+  layer_dict <- model$layers
+  names(layer_dict) <- lapply(layer_dict, function(layer) layer$name)
+  loss <- k_variable(0)
+
+  for (layer_name in names(layer_contributions)) {
+    coeff <- layer_contributions[[layer_name]]
+    activation <- layer_dict[[layer_name]]$output
+    scaling <- k_prod(k_cast(k_shape(activation), "float32"))
+    loss <- loss + (coeff * k_sum(k_square(activation)) / scaling)
+  }
+
+  # Gradient-ascent process
+  dream <- model$input
+  grads <- k_gradients(loss, dream)[[1]]
+  grads <- grads / k_maximum(k_mean(k_abs(grads)), 1e-7)
+  outputs <- list(loss, grads)
+
+  k_function(list(dream), outputs)
+
+
 }
 
 #' Dreamify an Image
@@ -27,6 +57,8 @@ load_imagenet_model <- function(...){
 #' @param octave_scale
 #' @param iterations
 #' @param max_loss
+#' @param output_image_path
+#' @param loss_and_grads
 #'
 #' @return
 #' @export
@@ -39,7 +71,8 @@ load_imagenet_model <- function(...){
 deep_dreamify <- function(
 
   base_image_path,
-  model = load_imagenet_model(),
+  output_image_path,
+  loss_and_grads = calc_loss_and_grads(load_imagenet_model()),
 
   layer_contributions = list(
     mixed2 = 0.2,
@@ -58,29 +91,6 @@ deep_dreamify <- function(
 
   library(keras)
   library(tensorflow)
-  # Set some initial parameters
-  k_set_learning_phase(0)
-  tf$compat$v1$disable_eager_execution()
-
-  message('\nPerforming Gradient Ascent...\n')
-  # Define loss to be maximised
-  layer_dict <- model$layers
-  names(layer_dict) <- lapply(layer_dict, function(layer) layer$name)
-  loss <- k_variable(0)
-
-  for (layer_name in names(layer_contributions)) {
-    coeff <- layer_contributions[[layer_name]]
-    activation <- layer_dict[[layer_name]]$output
-    scaling <- k_prod(k_cast(k_shape(activation), "float32"))
-    loss <- loss + (coeff * k_sum(k_square(activation)) / scaling)
-  }
-
-  # Gradient-ascent process
-  dream <- model$input
-  grads <- k_gradients(loss, dream)[[1]]
-  grads <- grads / k_maximum(k_mean(k_abs(grads)), 1e-7)
-  outputs <- list(loss, grads)
-  loss_and_grads <- k_function(list(dream), outputs)
 
   message('\nProcessing Input Image...\n')
   img <- preprocess_image(base_image_path)
@@ -116,8 +126,7 @@ deep_dreamify <- function(
     shrunk_original_img <- resize_img(original_img, shape)
 
     # If we're at the end shape, save the new image
-    if(identical(end_shape, shape)) save_img(img, fname = sprintf("dream_at_scale_%s.png",
-                                                                  paste(shape, collapse = "x")))
+    if(identical(end_shape, shape)) save_img(img, fname = output_image_path)
 
   }
 
