@@ -33,10 +33,10 @@ deprocess_image <- function(img) {
 #' that the image is longer than it wide and pads the x axes so that it is as long as wide. Subsequently,
 #' the image is resized.
 #'
-#' @param image_path hi
-#' @param size_x bye
-#' @param size_y :)
-#' @param new_path die
+#' @param image_path
+#' @param size_x
+#' @param size_y
+#' @param new_path
 #'
 #' @return
 #' @export
