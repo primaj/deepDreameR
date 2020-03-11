@@ -7,13 +7,7 @@
 pad_and_resize_img(image_path, size_x = 300, size_y = 300, new_path = NULL)
 }
 \arguments{
-\item{image_path}{hi}
-
-\item{size_x}{bye}
-
-\item{size_y}{:)}
-
-\item{new_path}{die}
+\item{new_path}{}
 }
 \value{
 
