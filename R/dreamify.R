@@ -18,6 +18,15 @@ load_imagenet_model <- function(...){
   )
 }
 
+#' Calculate Loss & Gradients
+#'
+#' @param model
+#' @param layer_contributions
+#'
+#' @return
+#' @export
+#'
+#' @examples
 calc_loss_and_grads <- function(model, layer_contributions){
 
   # Set some initial parameters
