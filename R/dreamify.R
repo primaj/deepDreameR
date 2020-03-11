@@ -18,7 +18,7 @@ load_imagenet_model <- function(...){
   )
 }
 
-calc_loss_and_grads <- function(model){
+calc_loss_and_grads <- function(model, layer_contributions){
 
   # Set some initial parameters
   k_set_learning_phase(0)
@@ -44,7 +44,6 @@ calc_loss_and_grads <- function(model){
   outputs <- list(loss, grads)
 
   k_function(list(dream), outputs)
-
 
 }
 
@@ -72,13 +71,15 @@ deep_dreamify <- function(
 
   base_image_path,
   output_image_path,
-  loss_and_grads = calc_loss_and_grads(load_imagenet_model()),
 
-  layer_contributions = list(
-    mixed2 = 0.2,
-    mixed3 = 3,
-    mixed4 = 2,
-    mixed5 = 1.5
+  loss_and_grads = calc_loss_and_grads(
+    model = load_imagenet_model(),
+    layer_contributions = list(
+      mixed2 = 0.2,
+      mixed3 = 3,
+      mixed4 = 2,
+      mixed5 = 1.5
+    )
   ),
 
   step = 0.01,
